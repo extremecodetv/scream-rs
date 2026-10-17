@@ -66,4 +66,4 @@ cfg keys are listed below), and every option can be set back to the original beh
 ## Command line
 
 Any option can also be given on the command line for one run, without touching the saved
-settings: `scream --opt VIEW FULL --opt FILTER FSR`.
+settings: `scream-rs --opt VIEW FULL --opt FILTER FSR`.

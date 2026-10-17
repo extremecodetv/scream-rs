@@ -22,13 +22,13 @@ jobs:
         include:
           - name: windows-x64
             os: windows-latest
-            exe: scream.exe
+            exe: scream-rs.exe
           - name: linux-x64
             os: ubuntu-latest
-            exe: scream
+            exe: scream-rs
           - name: macos-arm64
             os: macos-latest
-            exe: scream
+            exe: scream-rs
     steps:
       - uses: actions/checkout@v4
 

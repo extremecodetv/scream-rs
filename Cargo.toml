@@ -6,6 +6,11 @@ description = "Source port of the SCream engine (Scratches: Director's Cut) in R
 repository = "https://github.com/extremecodetv/scream-rs"
 readme = "README.md"
 
+# Not "scream": the original executable in the game folder is scream.exe.
+[[bin]]
+name = "scream-rs"
+path = "src/main.rs"
+
 [dependencies]
 winit = "0.30"
 wgpu = "25"

@@ -4,7 +4,7 @@ use scream::engine::{Engine, Options};
 
 fn usage() -> ! {
     eprintln!(
-        "usage: scream [options]\n\
+        "usage: scream-rs [options]\n\
          \n  --game <dir>               folder of Scratches: Director's Cut (scratches.sc, scratches.res)\
          \n  --windowed <W>x<H>         start in a window of this size\
          \n  --pos <x> <y>              window position\

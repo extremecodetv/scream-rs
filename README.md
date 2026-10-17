@@ -89,11 +89,12 @@ Point the port at the folder of your installed game, the one that contains `scra
 `scratches.res`:
 
 ```sh
-scream --game "C:\Program Files (x86)\Steam\steamapps\common\Scratches"
+scream-rs --game "C:\Program Files (x86)\Steam\steamapps\common\Scratches"
 ```
 
 Without `--game`, scream-rs looks in the current folder, next to its executable, and in the
-default Steam library paths. You can also simply copy the executable into the game folder.
+default Steam library paths. You can also simply copy `scream-rs` into the game folder — it
+does not replace the original `scream.exe`.
 
 Settings and save games are kept separate from the original game:
 
@@ -163,7 +164,7 @@ The engine can be driven from the command line, which makes visual regression ch
 
 ```sh
 # Jump straight into a location, hold TAB, take a screenshot at frame 330 and quit
-scream --skip-videos --windowed 1600x900 \
+scream-rs --skip-videos --windowed 1600x900 \
        --exec "scSwitch(SC_ROOM,'garden'); scSwitch(SC_NODE,'n1')" \
        --input "300:key:Tab" --shot garden.png 330
 ```
