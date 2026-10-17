@@ -1,0 +1,36 @@
+[package]
+name = "scream"
+version = "0.1.0"
+edition = "2021"
+description = "Source port of the SCream engine (Scratches: Director's Cut) in Rust"
+repository = "https://github.com/extremecodetv/scream-rs"
+readme = "README.md"
+
+[dependencies]
+winit = "0.30"
+wgpu = "25"
+pollster = "0.4"
+bytemuck = { version = "1", features = ["derive"] }
+glam = "0.30"
+image = { version = "0.25", default-features = false, features = ["jpeg", "tga", "png"] }
+mlua = { version = "0.10", features = ["lua51", "vendored"] }
+gilrs = "0.11"
+cpal = "0.15"
+lewton = "0.10"
+ogg = "0.8"
+theora-rs = "0.1"
+log = "0.4"
+env_logger = "0.11"
+anyhow = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+dirs = "6"
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
+
+[profile.release]
+opt-level = 3
