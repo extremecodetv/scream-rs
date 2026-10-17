@@ -42,3 +42,12 @@ jobs:
 
       - name: Build examples
         run: cargo build --release --locked --examples
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: scream-rs-${{ runner.os }}
+          path: |
+            target/release/scream-rs
+            target/release/scream-rs.exe
+          if-no-files-found: error
