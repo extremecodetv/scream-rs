@@ -172,6 +172,7 @@ scream-rs --skip-videos --windowed 1600x900 \
 | Flag | Purpose |
 |---|---|
 | `--game <dir>` | game folder |
+| `--console` | show a console window with the log (Windows release builds start without one) |
 | `--windowed <W>x<H>`, `--pos <x> <y>` | window size and position |
 | `--opt <KEY> <VALUE>` | port option for this run (see [OPTIONS](docs/OPTIONS.md)) |
 | `--skip-videos` | do not play cutscenes |
@@ -180,7 +181,7 @@ scream-rs --skip-videos --windowed 1600x900 \
 | `--input "<frame>:<kind>:<arg>;..."` | scripted input: `click`, `rclick`, `move`, `look`, `key`, `keyup` |
 | `--snap <png> <frame>` / `--shot <png> <frame>` | screenshot at a frame / and quit |
 
-Runs with test flags never overwrite the player's settings. Set `RUST_LOG=scream=debug` for a
+Runs with test flags never overwrite the player's settings. Set `RUST_LOG=scream=debug` (with `--console`) for a
 detailed log. The `examples/` folder holds small tools used during development (archive and
 script probes, image diff and crop).
 

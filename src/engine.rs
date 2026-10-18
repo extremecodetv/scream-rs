@@ -2221,7 +2221,11 @@ impl Engine {
     }
 
     fn refresh_save_slots(&self) {
-        let mut labels: [String; 11] = Default::default();
+        // The original leaves empty rows blank and prints the label as the script's save
+        // function returned it; here every row is captioned, and a save without a label (made
+        // before the script's location/day was known) still reads as one.
+        let caption = |label: String| if label.trim().is_empty() { "saved game".to_string() } else { label };
+        let mut labels: [String; 11] = std::array::from_fn(|row| format!("{row}. empty"));
         let mut exists = [false; 12];
         let mut any = false;
         for s in 1..12 {
@@ -2229,7 +2233,7 @@ impl Engine {
                 exists[s] = true;
                 any = true;
                 let row = if s == 11 { 0 } else { s };
-                labels[row] = format!("{row}. {label}");
+                labels[row] = format!("{row}. {}", caption(label));
             }
         }
         // The autosave shares row 0 with the quicksave; the newer one is offered.
@@ -2237,7 +2241,7 @@ impl Engine {
             if let Some(label) = crate::save::read_label(&self.save_path(AUTOSAVE_SLOT)) {
                 exists[11] = true;
                 any = true;
-                labels[0] = format!("0. {label} (auto)");
+                labels[0] = format!("0. {} (auto)", caption(label));
             }
         }
         let mut m = self.menu.borrow_mut();

@@ -94,15 +94,29 @@ pub fn read_label(path: &Path) -> Option<String> {
     Some(data.label)
 }
 
-pub fn save(e: &Engine, path: &Path, label: &str) -> Result<()> {
-    let mut d = SaveData { label: label.into(), ..Default::default() };
-    for pair in e.lua.globals().pairs::<mlua::Value, mlua::Value>() {
+/// Every global holding a number: the script keeps all world state in them (`first_cellar`,
+/// `has_knife`, `currentGame`, ...). mlua hands integral Lua 5.1 numbers over as
+/// `Value::Integer`, so both variants count.
+fn numeric_globals(lua: &mlua::Lua) -> Result<Vec<(String, f64)>> {
+    let mut out = Vec::new();
+    for pair in lua.globals().pairs::<mlua::Value, mlua::Value>() {
         let (k, v) = pair.map_err(|e| anyhow::anyhow!("{e}"))?;
-        if let (mlua::Value::String(k), Some(n)) = (&k, v.as_f64()) {
-            d.globals.push((k.to_string_lossy().to_string(), n));
+        let n = match v {
+            mlua::Value::Integer(i) => i as f64,
+            mlua::Value::Number(n) => n,
+            _ => continue,
+        };
+        if let mlua::Value::String(k) = k {
+            out.push((k.to_string_lossy().to_string(), n));
         }
     }
-    d.globals.sort_by(|a, b| a.0.cmp(&b.0));
+    out.sort_by(|a, b| a.0.cmp(&b.0));
+    Ok(out)
+}
+
+pub fn save(e: &Engine, path: &Path, label: &str) -> Result<()> {
+    let mut d = SaveData { label: label.into(), ..Default::default() };
+    d.globals = numeric_globals(&e.lua)?;
     {
         let c = e.cfg.borrow();
         let f = &c.fx;
@@ -181,8 +195,20 @@ pub fn save(e: &Engine, path: &Path, label: &str) -> Result<()> {
 pub fn load(e: &Engine, path: &Path) -> Result<()> {
     let text = std::fs::read_to_string(path).with_context(|| path.display().to_string())?;
     let d: SaveData = serde_json::from_str(&text)?;
+    let err = |e: mlua::Error| anyhow::anyhow!("{e}");
+    let g = e.lua.globals();
+    // A flag the script created after this save was made did not exist then. Saves from before
+    // 0.1.2 carry no globals at all; those keep the running state rather than wiping it.
+    if !d.globals.is_empty() {
+        let saved: std::collections::HashSet<&str> = d.globals.iter().map(|(k, _)| k.as_str()).collect();
+        for (k, _) in numeric_globals(&e.lua)? {
+            if !saved.contains(k.as_str()) {
+                g.set(k.as_str(), mlua::Value::Nil).map_err(err)?;
+            }
+        }
+    }
     for (k, v) in &d.globals {
-        e.lua.globals().set(k.as_str(), *v).map_err(|e| anyhow::anyhow!("{e}"))?;
+        g.set(k.as_str(), *v).map_err(err)?;
     }
     {
         let mut c = e.cfg.borrow_mut();

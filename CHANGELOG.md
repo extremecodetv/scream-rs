@@ -1,5 +1,22 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- Saves keep the state of the world. The script's flags (`first_cellar`, `has_knife`,
+  `currentGame`, ...) hold whole numbers, which were left out of the save, so a loaded game
+  replayed old events, e.g. day one's reminder to unpack the luggage on day two. Flags created
+  after a save are cleared when it is loaded. Saves made with 0.1.1 or earlier carry no flags
+  and should be made again.
+- Save slots in the menu are captioned: the location and day from the script, "saved game"
+  for a save without a caption, "empty" for a free slot.
+
+### Changed
+
+- Windows release builds start without a console window; `--console` shows one with the log.
+  Startup errors are shown in a message box.
+
 ## 0.1.1 — 2026-10-18
 
 ### Fixed
