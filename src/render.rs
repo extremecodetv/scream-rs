@@ -978,7 +978,7 @@ impl Engine {
         for (i, s) in t.items.iter().enumerate() {
             let y = VIRTUAL_H - base - 16.0 * i as f32 - 16.0;
             let (x, color) = if menu {
-                let x = VIRTUAL_W / 2.0 - (s.len() / 2) as f32 * 10.0 - 4.0;
+                let x = VIRTUAL_W / 2.0 - (s.chars().count() / 2) as f32 * 10.0 - 4.0;
                 (x, if i == n - 1 { WHITE } else { [0.1, 0.75, 0.75, 1.0] })
             } else {
                 (16.0, [0.1, 0.75, 0.75, 1.0])
@@ -1006,8 +1006,8 @@ impl Engine {
         let k = if large { 1.5 } else { 1.0 };
         let lowest = lines.iter().map(|l| l.1).fold(f32::MAX, f32::min);
         for (s, base, alpha, glow_a) in lines {
-            let width = s.len() as f32 * 10.0 * k;
-            let x = if large { (VIRTUAL_W - width) / 2.0 } else { VIRTUAL_W / 2.0 - (s.len() / 2) as f32 * 10.0 + 1.0 };
+            let width = s.chars().count() as f32 * 10.0 * k;
+            let x = if large { (VIRTUAL_W - width) / 2.0 } else { VIRTUAL_W / 2.0 - (s.chars().count() / 2) as f32 * 10.0 + 1.0 };
             let y = if large {
                 let rank = ((base - lowest) / 16.0).round();
                 VIRTUAL_H - 6.0 - 24.0 * (rank + 1.0)
@@ -1067,7 +1067,7 @@ impl Engine {
         let mut g = self.gfx.borrow_mut();
         let mut cx = x;
         let cell = 16.0 * k;
-        for b in text.bytes() {
+        for b in crate::script::encode(text) {
             let code = b as u32;
             let (col, row) = ((code % 16) as f32, (code / 16) as f32);
             let (u0, v0) = (col / 16.0, row / 16.0);
@@ -1115,7 +1115,7 @@ fn wrap(text: &str, width: usize) -> Vec<String> {
     let mut out = Vec::new();
     let mut line = String::new();
     for word in text.split_whitespace() {
-        if !line.is_empty() && line.len() + 1 + word.len() > width {
+        if !line.is_empty() && line.chars().count() + 1 + word.chars().count() > width {
             out.push(std::mem::take(&mut line));
         }
         if !line.is_empty() {

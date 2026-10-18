@@ -34,12 +34,23 @@ impl Args {
 
     pub fn opt_str(&self, i: usize) -> Option<String> {
         match self.0.get(i - 1) {
-            Some(Value::String(s)) => Some(s.to_string_lossy().to_string()),
+            Some(Value::String(s)) => Some(decode(&s.as_bytes())),
             Some(Value::Integer(n)) => Some(n.to_string()),
             Some(Value::Number(n)) => Some(lua_number_string(*n)),
             _ => None,
         }
     }
+}
+
+/// Game text is 8-bit (Windows-1251 in the Russian release) and the font atlas is indexed by
+/// byte, so script strings are carried byte-for-byte as chars U+0000..U+00FF.
+pub fn decode(b: &[u8]) -> String {
+    b.iter().map(|&c| c as char).collect()
+}
+
+/// Inverse of [`decode`]: one byte per char.
+pub fn encode(s: &str) -> Vec<u8> {
+    s.chars().map(|c| u8::try_from(c as u32).unwrap_or(b'?')).collect()
 }
 
 /// Lua 5.1 `%.14g` formatting of numbers converted to strings.
@@ -439,7 +450,7 @@ pub fn register(lua: &Lua, engine: Weak<Engine>) -> mlua::Result<()> {
             Ok(match f(&e, &args) {
                 Ret::None => Value::Integer(0),
                 Ret::Num(n) => Value::Number(n),
-                Ret::Str(s) => Value::String(lua.create_string(&s)?),
+                Ret::Str(s) => Value::String(lua.create_string(encode(&s))?),
             })
         })?;
         globals.set(name, func)?;
@@ -468,7 +479,7 @@ pub fn call_global(lua: &Lua, name: &str) {
 pub fn call_global_str(lua: &Lua, name: &str) -> Option<String> {
     let f: mlua::Function = lua.globals().get(name).ok()?;
     match f.call::<Value>(()) {
-        Ok(Value::String(s)) => Some(s.to_string_lossy().to_string()),
+        Ok(Value::String(s)) => Some(decode(&s.as_bytes())),
         Ok(_) => None,
         Err(e) => {
             log::error!("lua: {name}: {e}");

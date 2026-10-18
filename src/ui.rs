@@ -27,7 +27,7 @@ impl Default for Feedback {
 impl Feedback {
     /// Splits `text` into 1–4 lines by length and starts showing it.
     pub fn set(&mut self, text: &str, txt_speed: i32) {
-        let bytes: Vec<u8> = text.bytes().collect();
+        let bytes = crate::script::encode(text);
         let len = bytes.len();
         if len > 399 {
             return;
@@ -199,7 +199,7 @@ impl Journal {
         if !self.lines.is_empty() {
             self.lines.push(String::new());
         }
-        let bytes = text.as_bytes();
+        let bytes = crate::script::encode(text);
         let mut start = 0;
         let mut run = 0;
         for i in 0..bytes.len() {

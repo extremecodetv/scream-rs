@@ -119,8 +119,10 @@ pub fn adapt(chunk: &[u8]) -> Result<Vec<u8>> {
     let mut r = Reader { data: chunk, pos: 12, size_t: size_t as usize };
     let mut w = Writer { out: header, size_t: host };
     function(&mut r, &mut w)?;
+    // `luaU_undump` stops after the main function and ignores the rest; the Russian
+    // `scratches.sc` ends with a padding byte.
     if r.pos != chunk.len() {
-        bail!("trailing data after chunk ({} of {} bytes)", r.pos, chunk.len());
+        log::debug!("ignoring {} trailing bytes after Lua chunk", chunk.len() - r.pos);
     }
     Ok(w.out)
 }

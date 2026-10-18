@@ -322,8 +322,14 @@ impl Engine {
             let sc = base.with_extension("sc");
             let lua_src = base.with_extension("lua");
             let (chunk, mode, label) = if sc.is_file() {
+                // `lua_load` tells bytecode from source by the leading ESC; the Spanish fan
+                // translation ships `scratches.sc` as plain Lua source.
                 let bytes = std::fs::read(&sc)?;
-                (crate::bytecode::adapt(&bytes)?, mlua::ChunkMode::Binary, sc.display().to_string())
+                if bytes.first() == Some(&0x1b) {
+                    (crate::bytecode::adapt(&bytes)?, mlua::ChunkMode::Binary, sc.display().to_string())
+                } else {
+                    (bytes, mlua::ChunkMode::Text, sc.display().to_string())
+                }
             } else if lua_src.is_file() {
                 (std::fs::read(&lua_src)?, mlua::ChunkMode::Text, lua_src.display().to_string())
             } else {
@@ -1421,7 +1427,8 @@ impl Engine {
 
     pub fn subtitle_load(&self, file: &str) {
         let path = self.game_dir.join(file);
-        let text = std::fs::read_to_string(&path).unwrap_or_default();
+        // Bytes, not UTF-8: localized .srt files are 8-bit like the script text.
+        let text = std::fs::read(&path).map(|b| script::decode(&b)).unwrap_or_default();
         let mut s = self.subtitles.borrow_mut();
         s.lines = parse_srt(&text);
         s.start = Some(Instant::now());
